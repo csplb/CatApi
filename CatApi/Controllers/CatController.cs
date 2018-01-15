@@ -28,7 +28,7 @@ namespace CatApi.Controllers
         [HttpGet("api/cats")]
         public IEnumerable<Cat> Get()
         {
-            return cats;
+            return cats.OrderBy(x => Guid.NewGuid());
         }
 
         // GET api/values/5
