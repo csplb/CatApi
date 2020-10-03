@@ -26,9 +26,14 @@ namespace CatApi.Controllers
 
         // GET api/values
         [HttpGet("api/cats")]
-        public IEnumerable<Cat> Get()
+        public IEnumerable<Cat> Get([FromQuery]bool rand=false)
         {
-            return cats.OrderBy(x => Guid.NewGuid());
+            if (!rand)
+                return cats.OrderByDescending(x => x.Loves).ThenByDescending(x=>x.Hates);
+            else
+                return cats.OrderBy(x => Guid.NewGuid());
+
+
         }
 
         // GET api/values/5
