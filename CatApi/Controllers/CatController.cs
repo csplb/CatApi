@@ -79,19 +79,5 @@ namespace CatApi.Controllers
                 return Ok();
             }
         }
-
-        [Authorize]
-        [HttpPost("api/admin/save")]
-        public IActionResult Save()
-        {
-            using (FileStream fs = new FileStream("cats.json", FileMode.Create))
-            using (StreamWriter sw = new StreamWriter(fs))
-            {
-                var data = JsonConvert.SerializeObject(cats);
-                sw.Write(data);
-            }
-
-            return Ok();
-        }
     }
 }
