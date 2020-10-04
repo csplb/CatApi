@@ -1,8 +1,6 @@
 name: Build CatAPI
 
 on:
-  push:
-  
   pull_request:
     branches: [ master ]
 
