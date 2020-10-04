@@ -1,8 +1,6 @@
-name: .NET Core
+name: Build CatAPI
 
 on:
-  push:
-  
   pull_request:
     branches: [ master ]
 
@@ -21,5 +19,3 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --configuration Release --no-restore
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
