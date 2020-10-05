@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Bazinga.AspNetCore.Authentication.Basic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
 namespace CatApi
@@ -28,13 +21,12 @@ namespace CatApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
-                .AddJsonOptions(opt =>
-                {
-                    opt.SerializerSettings.Formatting = Formatting.Indented;
-                    opt.SerializerSettings.ReferenceLoopHandling =
-                        ReferenceLoopHandling.Ignore;
-                });
+            services.AddControllers().AddNewtonsoftJson(opt =>
+            {
+                opt.SerializerSettings.Formatting = Formatting.Indented;
+                opt.SerializerSettings.ReferenceLoopHandling =
+                    ReferenceLoopHandling.Ignore;
+            });
 
             services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
                 .AddBasicAuthentication(credentials =>
@@ -44,17 +36,23 @@ namespace CatApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseRouting();
             app.UsePathBase(Configuration["BasePath"] ?? "/");
-            app.UseAuthentication();
 
-            app.UseMvc();
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

@@ -1,8 +1,9 @@
-FROM microsoft/aspnetcore:2.0 AS base
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS base
 WORKDIR /app
+ENV ASPNETCORE_URLS=http://+:80 
 EXPOSE 80
 
-FROM microsoft/aspnetcore-build:2.0 AS build
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 AS build
 WORKDIR /src
 COPY ["CatApi/CatApi.csproj", "CatApi/"]
 RUN dotnet restore "CatApi/CatApi.csproj"
