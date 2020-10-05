@@ -6,7 +6,6 @@
         public string Url { get; set; }
         public string SourceUrl { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
         public int Loves { get; set; }
         public int Hates { get; set; }
     }
