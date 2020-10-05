@@ -1,4 +1,5 @@
-﻿using Bazinga.AspNetCore.Authentication.Basic;
+﻿using System.Threading.Tasks;
+using Bazinga.AspNetCore.Authentication.Basic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -6,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using System.Threading.Tasks;
 
 namespace CatApi
 {

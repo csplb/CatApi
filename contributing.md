@@ -10,10 +10,14 @@ strictly educational, experimental and meant to be very basic.
 1. [Fork](https://github.com/csplb/CatApi/fork) and clone the repository
 2. Configure and install the dependencies: `dotnet restore`
 3. Create a new branch: `git checkout -b my-branch-name`
-4. Make your changes
-5. Push to your fork and [submit a pull
+4. Make your changes, along with tests if possible
+5. Format your code! If your editor supports `.editorconfig` (Visual Studio
+   does) that's fine. If not - please use `dotnet-format`!
+6. Test if everything is working by using test suite `dotnet test
+   test/CatApi.Test.csproj`
+7. Push to your fork and [submit a pull
    request](https://github.com/csplb/CatApi/compare)
-6. Pat your self on the back and wait for your pull request to be reviewed and
+8. Pat your self on the back and wait for your pull request to be reviewed and
    merged.
 
 Here are a few things you can do that will increase the likelihood of your pull
@@ -28,6 +32,7 @@ request being accepted:
 
 ## Resources
 
-- [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
+- [How to Contribute to Open
+  Source](https://opensource.guide/how-to-contribute/)
 - [Using Pull Requests](https://help.github.com/articles/about-pull-requests/)
 - [GitHub Help](https://help.github.com)

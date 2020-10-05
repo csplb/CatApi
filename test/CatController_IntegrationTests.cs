@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -8,9 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using CatApi.Models;
+using Newtonsoft.Json;
 using Xunit;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace CatApi.Test
 {
