@@ -20,6 +20,6 @@ jobs:
     - name: Install dependencies
       run: dotnet restore src/CatApi.csproj
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build src/CatApi.csproj --configuration Release --no-restore
     - name: Test
-      run: dotnet test --collect:"XPlat Code Coverage"
+      run: dotnet test test/CatApi.Test.csproj --collect:"XPlat Code Coverage"
