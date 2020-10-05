@@ -7,9 +7,9 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
 using System.Xml;
 using CatApi.Models;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace CatApi.Test
@@ -17,6 +17,7 @@ namespace CatApi.Test
     public class CatApi_Integration : IClassFixture<CustomWebApplicationFactory<Startup>>
     {
         private readonly CustomWebApplicationFactory<Startup> _factory;
+        private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
         public CatApi_Integration(CustomWebApplicationFactory<Startup> factory)
         {
@@ -49,7 +50,7 @@ namespace CatApi.Test
             response.EnsureSuccessStatusCode(); // Status Code 200-299
 
             var resp = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<IList<Cat>>(resp);
+            var data = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
 
             Assert.NotEmpty(data);
         }
@@ -63,11 +64,11 @@ namespace CatApi.Test
             response.EnsureSuccessStatusCode();
 
             var resp = await response.Content.ReadAsStringAsync();
-            var randomList = JsonConvert.DeserializeObject<IList<Cat>>(resp);
+            var randomList = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
 
             response = await DoGet("/api/cats");
             resp = await response.Content.ReadAsStringAsync();
-            var list = JsonConvert.DeserializeObject<IList<Cat>>(resp);
+            var list = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
 
             Assert.NotEmpty(randomList);
             Assert.NotEqual(randomList, list);
@@ -83,13 +84,13 @@ namespace CatApi.Test
             response.EnsureSuccessStatusCode(); // Status Code 200-299
 
             var resp = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<IList<Cat>>(resp);
+            var data = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
 
             var id = data[0].Id;
 
             response = await DoGet($"/api/cat/{id}");
             resp = await response.Content.ReadAsStringAsync();
-            var singleCat = JsonConvert.DeserializeObject<Cat>(resp);
+            var singleCat = JsonSerializer.Deserialize<Cat>(resp, _jsonOptions);
 
             Assert.Equal(data[0].Id, singleCat.Id);
             Assert.Equal(data[0].Name, singleCat.Name);
@@ -114,7 +115,7 @@ namespace CatApi.Test
             response.EnsureSuccessStatusCode(); // Status Code 200-299
 
             var resp = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<IList<Cat>>(resp);
+            var data = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
 
             var id = data[0].Id;
 
@@ -134,7 +135,7 @@ namespace CatApi.Test
             response.EnsureSuccessStatusCode(); // Status Code 200-299
 
             var resp = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<IList<Cat>>(resp);
+            var data = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
 
             var id = data[0].Id;
 
@@ -151,7 +152,7 @@ namespace CatApi.Test
             response.EnsureSuccessStatusCode(); // Status Code 200-299
 
             var resp = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<IList<Cat>>(resp);
+            var data = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
 
             var id = data[0].Id;
 
@@ -171,7 +172,7 @@ namespace CatApi.Test
             response.EnsureSuccessStatusCode(); // Status Code 200-299
 
             var resp = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<IList<Cat>>(resp);
+            var data = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
 
             var id = data[0].Id;
 
@@ -191,7 +192,7 @@ namespace CatApi.Test
             response.EnsureSuccessStatusCode(); // Status Code 200-299
 
             var resp = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<IList<Cat>>(resp);
+            var data = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
 
             var before = data[0];
 
@@ -199,7 +200,7 @@ namespace CatApi.Test
 
             response = await DoGet($"/api/cat/{before.Id}");
             resp = await response.Content.ReadAsStringAsync();
-            var after = JsonConvert.DeserializeObject<Cat>(resp);
+            var after = JsonSerializer.Deserialize<Cat>(resp, _jsonOptions);
 
             Assert.Equal(before.Id, after.Id);
             Assert.Equal(before.Name, after.Name);
@@ -219,15 +220,16 @@ namespace CatApi.Test
             response.EnsureSuccessStatusCode(); // Status Code 200-299
 
             var resp = await response.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<IList<Cat>>(resp);
+            var data = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
 
             var before = data[0];
 
             await DoPut($"/api/hate/{before.Id}", username, password);
 
             response = await DoGet($"/api/cat/{before.Id}");
+
             resp = await response.Content.ReadAsStringAsync();
-            var after = JsonConvert.DeserializeObject<Cat>(resp);
+            var after = JsonSerializer.Deserialize<Cat>(resp, _jsonOptions);
 
             Assert.Equal(before.Id, after.Id);
             Assert.Equal(before.Name, after.Name);

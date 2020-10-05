@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System.Text.Json;
 using Bazinga.AspNetCore.Authentication.Basic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
 
 namespace CatApi
 {
@@ -21,11 +21,9 @@ namespace CatApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddNewtonsoftJson(opt =>
-            {
-                opt.SerializerSettings.Formatting = Formatting.Indented;
-                opt.SerializerSettings.ReferenceLoopHandling =
-                    ReferenceLoopHandling.Ignore;
+            services.AddControllers().AddJsonOptions(opt => {
+                opt.JsonSerializerOptions.WriteIndented = true;
+                opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             });
 
             services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
