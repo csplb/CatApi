@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using CatApi.Models;
+﻿using CatApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace CatApi.Controllers
 {
@@ -26,14 +25,12 @@ namespace CatApi.Controllers
 
         // GET api/values
         [HttpGet("api/cats")]
-        public IEnumerable<Cat> Get([FromQuery]bool rand=false)
+        public IEnumerable<Cat> Get([FromQuery] bool rand = false)
         {
             if (!rand)
-                return cats.OrderByDescending(x => x.Loves).ThenByDescending(x=>x.Hates);
+                return cats.OrderByDescending(x => x.Loves).ThenByDescending(x => x.Hates);
             else
                 return cats.OrderBy(x => Guid.NewGuid());
-
-
         }
 
         // GET api/values/5
