@@ -17,7 +17,6 @@ all intended**.
     "Url": "http://25.media.tumblr.com/tumblr_m32hcqQtWW1qjc1a7o1_1280.jpg",
     "SourceUrl": "http://thecatapi.com/?id=3m3",
     "Name": "Hampton",
-    "Description": null,
     "Loves": 0,
     "Hates": 0
   },
@@ -25,8 +24,7 @@ all intended**.
 
 The data model has most importantly unique Id (alphanumeric), Name and Url
 (image) of a particular cat, as well as number of Loves and Hates. SourceUrl is
-used only as a homage to original data source and Description is not used
-currently.
+used only as a homage to original data source.
 
 The allowed operations are:
 
