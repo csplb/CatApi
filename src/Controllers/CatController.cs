@@ -5,7 +5,7 @@ using System.Linq;
 using CatApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace CatApi.Controllers
 {
@@ -19,7 +19,7 @@ namespace CatApi.Controllers
             using (StreamReader sr = new StreamReader(fs))
             {
                 var file = sr.ReadToEnd();
-                cats = JsonConvert.DeserializeObject<List<Cat>>(file);
+                cats = JsonSerializer.Deserialize<List<Cat>>(file);
             }
         }
 
