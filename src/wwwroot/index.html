@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>The Cat API</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">The Cat API</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" role="main">
+
+        <div class="row">
+            <div class="col-md-8 col-sm-12">
+                <div class="alert alert-primary" role="alert" id="alert">
+                    Log in first to love or hate cats.
+                </div>
+
+                <table class="table" id="cats">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Name</th>
+                            <th>💕</th>
+                            <th>😡</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-md-4 col-sm-12">
+                <div class="panel panel-primary" id="login-form">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Log in</h3>
+                    </div>
+                    <div class="panel-body">
+
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" class="form-control" id="username" placeholder="user">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" class="form-control" id="password">
+                        </div>
+
+                        <button id="login" class="btn btn-default">Log in</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <button class="btn btn-default" id="refresh" type="button">Refresh cat list</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <script>
+        const row = '<td><img src="{image}" style="width: 200px" class="img-thumbnail" /></td><td>{name}</td><td>{love}</td><td>{hate}</td><td><button type="button" class="btn btn-info" data-id="{id}">Love this cat!</button><button type="button" class="btn btn-warning" data-id="{id}">Hate this cat!</button></td>';
+
+        let token = '';
+
+        function refresh() {
+            const uri = 'api/cats';
+
+            $("#cats tbody").empty();
+
+            $.getJSON(uri)
+                .done(function (data) {
+                    $.each(data, function (key, item) {
+                        $('<tr>').html(row.replace("{image}", item.url).replace("{name}", item.name).replace("{love}", item.loves).replace("{hate}", item.hates).replace(/\{id\}/g, item.id)).appendTo($('#cats tbody'));
+                    });
+
+                    $('#cats tbody .btn-primary').click(function () { edit($(this).attr('data-id')); });
+                    $('#cats tbody .btn-danger').click(function () { del($(this).attr('data-id')); });
+                    $('#cats tbody .btn-info').click(function () { love($(this).attr('data-id')); });
+                    $('#cats tbody .btn-warning').click(function () { hate($(this).attr('data-id')); });
+                });
+        }
+
+        function love(id) {
+            $.ajax({
+                type: 'PUT',
+                url: 'api/love/' + id,
+                headers: token == '' ? {} : { "Authorization": 'Basic ' + token }
+            })
+                .done(function (resultData, status, err) {
+                    $('#alert').text('Cat is more loved!').removeClass("alert-danger alert-success").addClass("alert-success");
+                    refresh();
+                })
+                .fail(function (jqXHR, textStatus, err) {
+                    $('#alert').text('Error: ' + err).removeClass("alert-danger alert-success").addClass("alert-danger");
+                });
+        }
+
+        function hate(id) {
+            $.ajax({
+                type: 'PUT',
+                url: 'api/hate/' + id,
+                headers: token == '' ? {} : { "Authorization": 'Basic ' + token }
+            })
+                .done(function (resultData, status, err) {
+                    $('#alert').text('Cat is more hated!').removeClass("alert-danger alert-success").addClass("alert-success");
+                    refresh();
+                })
+                .fail(function (jqXHR, textStatus, err) {
+                    $('#alert').text('Error: ' + err).removeClass("alert-danger alert-success").addClass("alert-danger");
+                });
+        }
+
+        function login() {
+            token = btoa($('#username').val() + ':' + $('#password').val())
+        }
+
+        $(document).ready(function () {
+            $('#refresh').click(refresh);
+            $('#login').click(login);            
+        });
+    </script>
+</body>
+</html>

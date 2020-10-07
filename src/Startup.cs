@@ -21,7 +21,8 @@ namespace CatApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddJsonOptions(opt => {
+            services.AddControllers().AddJsonOptions(opt =>
+            {
                 opt.JsonSerializerOptions.WriteIndented = true;
                 opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             });
@@ -72,6 +73,9 @@ namespace CatApi
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
 
             app.UseSwagger();
             app.UseSwaggerUI(options =>
