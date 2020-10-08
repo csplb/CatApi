@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using CatApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
 
 namespace CatApi.Controllers
 {
@@ -13,13 +15,27 @@ namespace CatApi.Controllers
     {
         private static List<Cat> cats;
 
-        static CatController()
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly string _downloadDirectoryPath;
+
+
+    static CatController()
         {
             using (FileStream fs = new FileStream("cats.json", FileMode.Open))
             using (StreamReader sr = new StreamReader(fs))
             {
                 var file = sr.ReadToEnd();
                 cats = JsonSerializer.Deserialize<List<Cat>>(file);
+            }
+        }
+
+        public CatController(IWebHostEnvironment webHostEnvironment)
+        {
+            _webHostEnvironment = webHostEnvironment;
+            _downloadDirectoryPath =  $"{_webHostEnvironment.ContentRootPath}\\Downloads";
+            if (!Directory.Exists(_downloadDirectoryPath))
+            {
+                Directory.CreateDirectory(_downloadDirectoryPath);
             }
         }
 
@@ -74,6 +90,32 @@ namespace CatApi.Controllers
             {
                 result.Hates++;
                 return Ok();
+            }
+        }
+
+        [Authorize]
+        [HttpGet("api/image/{id}")]
+        public IActionResult Image(string id)
+        {
+            var cat = cats.FirstOrDefault(x => x.Id == id);
+
+            if (cat == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    var filepath = Path.Combine($"{_downloadDirectoryPath}\\{cat.Name}.{cat.Url.Substring(cat.Url.Length - 3)}");
+                    client.DownloadFileAsync(new Uri(cat.Url), filepath);
+                    return Ok();
+                }
+            }
+            catch (Exception)
+            {
+                return NotFound();
             }
         }
     }
