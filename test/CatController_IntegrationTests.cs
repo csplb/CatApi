@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Xml;
 using CatApi.Models;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 namespace CatApi.Test
@@ -237,6 +238,45 @@ namespace CatApi.Test
             Assert.Equal(before.Hates + 1, after.Hates);
         }
 
+        [Fact]
+        public async Task Get_DownloadCatImageWithWrongAuth_ShouldGet401()
+        {
+            var username = "wrong";
+            var password = "wrong";
+
+            var response = await DoGet("/api/image/{someID}", username, password);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+        
+        [Fact]
+        public async Task Get_DownloadCatImageWithWrongId_ShouldGet404()
+        {
+            var username = "username";
+            var password = "password";
+
+            var response = await DoGet("/api/image/{someID}", username, password);
+            
+            Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Get_DownloadCatImageWithCorrectId_ShouldDownloadImage()
+        {
+            var username = "username";
+            var password = "password";
+
+            var catsResponse = await DoGet("/api/cats");
+            var resp = await catsResponse.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<IList<Cat>>(resp, _jsonOptions);
+            
+            var response = await DoGet($"/api/image/{data[0].Id}", username, password);
+            
+            Assert.NotEmpty(data);
+            Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
         private async Task<HttpResponseMessage> DoPut(string url, string username, string password)
         {
             var client = _factory.CreateClient();
@@ -244,10 +284,26 @@ namespace CatApi.Test
             if (username != null)
             {
                 var byteArray = Encoding.UTF8.GetBytes($"{username}:{password}");
-                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
             }
 
             return await client.PutAsync(url, null);
         }
+
+        private async Task<HttpResponseMessage> DoGet(string url, string username, string password)
+        {
+            var client = _factory.CreateClient();
+
+            if (username != null)
+            {
+                var byteArray = Encoding.UTF8.GetBytes($"{username}:{password}");
+                client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            }
+
+            return await client.GetAsync(url);
+        }
+        
     }
 }
