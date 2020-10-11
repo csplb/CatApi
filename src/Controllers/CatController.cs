@@ -13,13 +13,12 @@ namespace CatApi.Controllers
 {
     public class CatController : Controller
     {
-        private static List<Cat> cats;
+        private static readonly List<Cat> cats;
 
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly string _downloadDirectoryPath;
-
-
-    static CatController()
+ 
+        static CatController()
         {
             using (FileStream fs = new FileStream("cats.json", FileMode.Open))
             using (StreamReader sr = new StreamReader(fs))
@@ -45,8 +44,8 @@ namespace CatApi.Controllers
         {
             if (!rand)
                 return cats.OrderByDescending(x => x.Loves).ThenByDescending(x => x.Hates);
-            else
-                return cats.OrderBy(x => Guid.NewGuid());
+            
+            return cats.OrderBy(x => Guid.NewGuid());
         }
 
         // GET api/values/5
@@ -56,8 +55,8 @@ namespace CatApi.Controllers
             var result = cats.FirstOrDefault(x => x.Id == id);
             if (result == null)
                 return NotFound();
-            else
-                return Ok(result);
+            
+            return Ok(result);
         }
 
         // PUT api/values/5
@@ -70,11 +69,9 @@ namespace CatApi.Controllers
             {
                 return NotFound();
             }
-            else
-            {
-                result.Loves++;
-                return Ok();
-            }
+            
+            result.Loves++;
+            return Ok();
         }
 
         [Authorize]
@@ -86,11 +83,9 @@ namespace CatApi.Controllers
             {
                 return NotFound();
             }
-            else
-            {
-                result.Hates++;
-                return Ok();
-            }
+            
+            result.Hates++; 
+            return Ok();
         }
 
         [Authorize]

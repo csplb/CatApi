@@ -1,12 +1,9 @@
-﻿using System.Threading.Tasks;
-using System.Text.Json;
-using Bazinga.AspNetCore.Authentication.Basic;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
+
 
 namespace CatApi
 {
@@ -21,44 +18,9 @@ namespace CatApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddJsonOptions(opt =>
-            {
-                opt.JsonSerializerOptions.WriteIndented = true;
-                opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-            });
-
-            services.AddAuthentication(BasicAuthenticationDefaults.AuthenticationScheme)
-                .AddBasicAuthentication(credentials =>
-                    Task.FromResult(
-                        credentials.username.StartsWith("user")
-                        && credentials.password.EndsWith("word")));
-
-            services.AddSwaggerGen(options =>
-            {
-                options.AddSecurityDefinition("basic", new OpenApiSecurityScheme
-                {
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "basic",
-                    In = ParameterLocation.Header,
-                    Description = "Basic Authorization header."
-                });
-
-                options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "basic"
-                            }
-                        },
-                        new string[] {}
-                    }
-                });
-            });
+            services.ConfigureControllers();
+            services.AddBasicAuthentication();
+            services.AddSwagger();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
