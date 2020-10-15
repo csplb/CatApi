@@ -13,7 +13,7 @@ namespace CatApi.Controllers
 {
     public class CatController : Controller
     {
-        private static readonly List<Cat> cats;
+        private static List<Cat> cats;
 
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly string _downloadDirectoryPath;
@@ -112,6 +112,22 @@ namespace CatApi.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [Authorize]
+        [HttpPost("api/cat/")]
+        public IActionResult AddCat(string url, string sourceUrl, string name)
+        {
+            Cat cat = new Cat(url, sourceUrl, name);
+            cats.Add(cat);
+            
+            using (FileStream fs = new FileStream("cats.json", FileMode.OpenOrCreate))
+            using (StreamWriter sw = new StreamWriter(fs))
+            {
+                sw.Write(JsonSerializer.Serialize(cats));
+            }
+
+            return Ok(cat);
         }
     }
 }
