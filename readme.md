@@ -32,6 +32,7 @@ The allowed operations are:
 * GET `api/cat/<id>` - to get a single cat of a given id,
 * PUT `api/love/<id>` - to increase number of loves of a cat with a given id,
 * PUT `api/hate/<id>` - to increase number of hates of a cat with a given id.
+* POST `api/cat/` - to add a new cat.
 
 Both "love" and "hate" operations require authorization, using HTTP Basic
 Authentication method, where username must start with "user" and password must
