@@ -33,6 +33,7 @@
                             <th>Name</th>
                             <th>💕</th>
                             <th>😡</th>
+                            <th>Download</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -79,7 +80,15 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
     <script>
-        const row = '<td><img src="{image}" style="width: 200px" class="img-thumbnail" /></td><td>{name}</td><td>{love}</td><td>{hate}</td><td><button type="button" class="btn btn-info" data-id="{id}">Love this cat!</button><button type="button" class="btn btn-warning" data-id="{id}">Hate this cat!</button></td>';
+        const row = '<td>' +
+            '<img src="{image}" style="width: 200px" class="img-thumbnail" />' +
+            '</td><td>{name}</td>' +
+            '<td>{love}</td>' +
+            '<td>{hate}</td>' +
+            '<td><button type="button" class="btn btn-info" data-id="{id}">Love this cat!</button>' +
+            '<button type="button" class="btn btn-warning" data-id="{id}">Hate this cat!</button>' +
+            '<button type="button" class="btn btn-default" data-id="{id}">Download image of this lovely cat!</button>' +
+            '</td>';
 
         let token = '';
 
@@ -98,6 +107,7 @@
                     $('#cats tbody .btn-danger').click(function () { del($(this).attr('data-id')); });
                     $('#cats tbody .btn-info').click(function () { love($(this).attr('data-id')); });
                     $('#cats tbody .btn-warning').click(function () { hate($(this).attr('data-id')); });
+                    $('#cats tbody .btn-default').click(function () { downloadImage($(this).attr('data-id')); });
                 });
         }
 
@@ -131,6 +141,21 @@
                 });
         }
 
+        function downloadImage(id) {
+            $.ajax({
+                type: 'GET',
+                url: 'api/image/' + id,
+                headers: token == '' ? {} : { "Authorization": 'Basic ' + token }
+            })
+                .done(function (resultData, status, err) {
+                    $('#alert').text('Image downloaded').removeClass("alert-danger alert-success").addClass("alert-success");
+                    refresh();
+                })
+                .fail(function (jqXHR, textStatus, err) {
+                    $('#alert').text('Error: ' + err).removeClass("alert-danger alert-success").addClass("alert-danger");
+                });
+        }
+        
         function login() {
             token = btoa($('#username').val() + ':' + $('#password').val())
         }

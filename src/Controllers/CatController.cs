@@ -2,17 +2,22 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using CatApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
 
 namespace CatApi.Controllers
 {
     public class CatController : Controller
     {
-        private static List<Cat> cats;
+        private static readonly List<Cat> cats;
 
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly string _downloadDirectoryPath;
+ 
         static CatController()
         {
             using (FileStream fs = new FileStream("cats.json", FileMode.Open))
@@ -23,14 +28,24 @@ namespace CatApi.Controllers
             }
         }
 
+        public CatController(IWebHostEnvironment webHostEnvironment)
+        {
+            _webHostEnvironment = webHostEnvironment;
+            _downloadDirectoryPath =  $"{_webHostEnvironment.ContentRootPath}\\Downloads";
+            if (!Directory.Exists(_downloadDirectoryPath))
+            {
+                Directory.CreateDirectory(_downloadDirectoryPath);
+            }
+        }
+
         // GET api/values
         [HttpGet("api/cats")]
         public IEnumerable<Cat> Get([FromQuery] bool rand = false)
         {
             if (!rand)
                 return cats.OrderByDescending(x => x.Loves).ThenByDescending(x => x.Hates);
-            else
-                return cats.OrderBy(x => Guid.NewGuid());
+            
+            return cats.OrderBy(x => Guid.NewGuid());
         }
 
         // GET api/values/5
@@ -40,8 +55,8 @@ namespace CatApi.Controllers
             var result = cats.FirstOrDefault(x => x.Id == id);
             if (result == null)
                 return NotFound();
-            else
-                return Ok(result);
+            
+            return Ok(result);
         }
 
         // PUT api/values/5
@@ -54,11 +69,9 @@ namespace CatApi.Controllers
             {
                 return NotFound();
             }
-            else
-            {
-                result.Loves++;
-                return Ok();
-            }
+            
+            result.Loves++;
+            return Ok();
         }
 
         [Authorize]
@@ -70,10 +83,34 @@ namespace CatApi.Controllers
             {
                 return NotFound();
             }
-            else
+            
+            result.Hates++; 
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpGet("api/image/{id}")]
+        public IActionResult Image(string id)
+        {
+            var cat = cats.FirstOrDefault(x => x.Id == id);
+
+            if (cat == null)
             {
-                result.Hates++;
-                return Ok();
+                return NotFound();
+            }
+
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    var filepath = Path.Combine($"{_downloadDirectoryPath}\\{cat.Name}.{cat.Url.Substring(cat.Url.Length - 3)}");
+                    client.DownloadFileAsync(new Uri(cat.Url), filepath);
+                    return Ok();
+                }
+            }
+            catch (Exception)
+            {
+                return NotFound();
             }
         }
     }

@@ -293,6 +293,8 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
+# Downloads folder
+*Downloads*
 
 # End of https://www.gitignore.io/api/csharp
 /CatApi.sln
