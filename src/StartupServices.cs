@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Bazinga.AspNetCore.Authentication.Basic;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
@@ -63,6 +64,11 @@ namespace CatApi
                 opt.JsonSerializerOptions.WriteIndented = true;
                 opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             });
+        }
+
+        public static void AddDatabaseContext(this IServiceCollection services)
+        {
+            services.AddDbContextPool<CatDbContext>(options => options.UseSqlite("Data Source=cats.db"));
         }
     }
 }

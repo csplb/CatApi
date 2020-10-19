@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-
 namespace CatApi
 {
     public class Startup
@@ -21,6 +20,7 @@ namespace CatApi
             services.ConfigureControllers();
             services.AddBasicAuthentication();
             services.AddSwagger();
+            services.AddDatabaseContext();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
