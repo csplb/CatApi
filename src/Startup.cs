@@ -21,6 +21,7 @@ namespace CatApi
             services.AddBasicAuthentication();
             services.AddSwagger();
             services.AddDatabaseContext();
+            services.InjectServices();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

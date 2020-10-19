@@ -4,6 +4,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Bazinga.AspNetCore.Authentication.Basic;
+using CatApi.Services;
+using CatApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
@@ -69,6 +71,11 @@ namespace CatApi
         public static void AddDatabaseContext(this IServiceCollection services)
         {
             services.AddDbContextPool<CatDbContext>(options => options.UseSqlite("Data Source=cats.db"));
+        }
+
+        public static void InjectServices(this IServiceCollection services)
+        {
+            services.AddSingleton<ICatService, CatService>();
         }
     }
 }
