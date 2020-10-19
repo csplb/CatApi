@@ -24,11 +24,17 @@ Here are a few things you can do that will increase the likelihood of your pull
 request being accepted:
 
 - Follow the coding style used in this project.
+- Follow REST rules.
 - Keep your change as focused as possible. If there are multiple changes you
   would like to make that are not dependent upon each other, consider submitting
   them as separate pull requests.
 - Write [good commit
   messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
+
+Small tips to follow project structure:
+1. When modifying `ConfigureServices()` in `Startup.cs`, 
+   create an extension method in `StartupServices.cs` if code added is big enough.
+2. New services should be injected in `InjectServices()` method located in `StartupServices.cs`.
 
 ## Resources
 
