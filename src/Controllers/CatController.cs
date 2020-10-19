@@ -8,12 +8,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace CatApi.Controllers
 {
     public class CatController : Controller
     {
-        private static readonly List<Cat> cats;
+        private static List<Cat> cats;
 
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly string _downloadDirectoryPath;
@@ -38,8 +39,14 @@ namespace CatApi.Controllers
             }
         }
 
-        // GET api/values
+        /// <summary>
+        /// Gets cats list. Not randomized by default.
+        /// </summary>
+        /// <param name="rand"></param>
+        /// <returns>The cat list</returns>
+        /// <response code="200">Returns the cat list</response>
         [HttpGet("api/cats")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IEnumerable<Cat> Get([FromQuery] bool rand = false)
         {
             if (!rand)
@@ -47,9 +54,17 @@ namespace CatApi.Controllers
             
             return cats.OrderBy(x => Guid.NewGuid());
         }
-
-        // GET api/values/5
+        
+        /// <summary>
+        /// Gets a cat with given id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns>A cat</returns>
+        /// <response code="200">Returns the cat</response>
+        /// <response code="404">Returns Not Found if the id is wrong</response>   
         [HttpGet("api/cat/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Get(string id)
         {
             var result = cats.FirstOrDefault(x => x.Id == id);
@@ -59,9 +74,16 @@ namespace CatApi.Controllers
             return Ok(result);
         }
 
-        // PUT api/values/5
+        /// <summary>
+        /// Increases love of a cat.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <response code="200">Returns Ok if love's been increased</response>
+        /// <response code="404">Returns Not Found if the id is wrong</response> 
         [Authorize]
         [HttpPut("api/love/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Love(string id)
         {
             var result = cats.FirstOrDefault(x => x.Id == id);
@@ -74,8 +96,16 @@ namespace CatApi.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Increases hate of a cat.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <response code="200">Returns Ok if hate's been increased</response>
+        /// <response code="404">Returns Not Found if the id is wrong</response> 
         [Authorize]
         [HttpPut("api/hate/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Hate(string id)
         {
             var result = cats.FirstOrDefault(x => x.Id == id);
@@ -88,8 +118,16 @@ namespace CatApi.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Downloads the image of a cat with given id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <response code="200">Returns Ok if image's been downloaded</response>
+        /// <response code="404">Returns Not Found if the id is wrong</response>  
         [Authorize]
         [HttpGet("api/image/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Image(string id)
         {
             var cat = cats.FirstOrDefault(x => x.Id == id);
@@ -112,6 +150,22 @@ namespace CatApi.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [Authorize]
+        [HttpPost("api/cat/")]
+        public IActionResult AddCat(string url, string sourceUrl, string name)
+        {
+            Cat cat = new Cat(url, sourceUrl, name);
+            cats.Add(cat);
+            
+            using (FileStream fs = new FileStream("cats.json", FileMode.OpenOrCreate))
+            using (StreamWriter sw = new StreamWriter(fs))
+            {
+                sw.Write(JsonSerializer.Serialize(cats));
+            }
+
+            return Ok(cat);
         }
     }
 }
