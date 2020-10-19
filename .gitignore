@@ -296,5 +296,8 @@ __pycache__/
 # Downloads folder
 *Downloads*
 
+# Databases
+cats.db
+
 # End of https://www.gitignore.io/api/csharp
 /CatApi.sln
