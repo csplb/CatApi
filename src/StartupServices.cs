@@ -1,4 +1,7 @@
-﻿using System.Text.Json;
+﻿using System;
+using System.IO;
+using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Bazinga.AspNetCore.Authentication.Basic;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +23,7 @@ namespace CatApi
                     In = ParameterLocation.Header,
                     Description = "Basic Authorization header."
                 });
-
+                
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
@@ -35,6 +38,12 @@ namespace CatApi
                         new string[] {}
                     }
                 });
+                
+                options.IncludeXmlComments(
+                    Path.Combine(
+                        AppContext.BaseDirectory, 
+                        $"{Assembly.GetExecutingAssembly().GetName().Name}.xml")
+                    );
             });
         }
 
