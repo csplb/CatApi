@@ -6,7 +6,8 @@ using System.Net;
 using CatApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
+using System.Threading.Tasks;
+using CatApi.Services.Interfaces;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 
@@ -14,47 +15,13 @@ namespace CatApi.Controllers
 {
     public class CatController : Controller
     {
-        private static List<Cat> cats;
+        private readonly ICatService _catService;
 
-        private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly string _downloadDirectoryPath;
- 
-        static CatController()
+        public CatController(ICatService catService)
         {
-            using (FileStream fs = new FileStream("cats.json", FileMode.Open))
-            using (StreamReader sr = new StreamReader(fs))
-            {
-                var file = sr.ReadToEnd();
-                cats = JsonSerializer.Deserialize<List<Cat>>(file);
-            }
+            _catService = catService;
         }
 
-        public CatController(IWebHostEnvironment webHostEnvironment)
-        {
-            _webHostEnvironment = webHostEnvironment;
-            _downloadDirectoryPath =  $"{_webHostEnvironment.ContentRootPath}\\Downloads";
-            if (!Directory.Exists(_downloadDirectoryPath))
-            {
-                Directory.CreateDirectory(_downloadDirectoryPath);
-            }
-        }
-
-        /// <summary>
-        /// Gets cats list. Not randomized by default.
-        /// </summary>
-        /// <param name="rand"></param>
-        /// <returns>The cat list</returns>
-        /// <response code="200">Returns the cat list</response>
-        [HttpGet("api/cats")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public IEnumerable<Cat> Get([FromQuery] bool rand = false)
-        {
-            if (!rand)
-                return cats.OrderByDescending(x => x.Loves).ThenByDescending(x => x.Hates);
-            
-            return cats.OrderBy(x => Guid.NewGuid());
-        }
-        
         /// <summary>
         /// Gets a cat with given id.
         /// </summary>
@@ -65,15 +32,48 @@ namespace CatApi.Controllers
         [HttpGet("api/cat/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Get(string id)
+        public async Task<IActionResult> Get(string id)
         {
-            var result = cats.FirstOrDefault(x => x.Id == id);
-            if (result == null)
-                return NotFound();
-            
+            var result = await _catService.GetCatAsync(id);
+            return result != null ? (IActionResult) Ok(result) : NotFound();
+        }
+        
+        /// <summary>
+        /// Gets cats list. Not randomized by default.
+        /// </summary>
+        /// <param name="rand"></param>
+        /// <returns>The cat list</returns>
+        /// <response code="200">Returns the cat list</response>
+        [HttpGet("api/cats")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IEnumerable<Cat>> Get([FromQuery] bool rand = false)
+        {
+            if (!rand)
+                return _catService.GetCatsAsync()
+                    .Result
+                    .OrderByDescending(x => x.Loves)
+                    .ThenByDescending(x => x.Hates);
+
+            return _catService.GetCatsAsync()
+                .Result
+                .OrderBy(x => Guid.NewGuid());
+        }
+        
+        /// <summary>
+        /// Adds a new cat.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="sourceUrl"></param>
+        /// <param name="name"></param>
+        /// <response code="200">Returns Ok when the cat is added to database</response>
+        [Authorize]
+        [HttpPost("api/cat/")]
+        public async Task<IActionResult> AddCat(string url, string sourceUrl, string name)
+        {
+            var result = await _catService.AddCatAsync(new Cat(url, sourceUrl, name));
             return Ok(result);
         }
-
+        
         /// <summary>
         /// Increases love of a cat.
         /// </summary>
@@ -84,16 +84,10 @@ namespace CatApi.Controllers
         [HttpPut("api/love/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Love(string id)
+        public async Task<IActionResult> Love(string id)
         {
-            var result = cats.FirstOrDefault(x => x.Id == id);
-            if (result == null)
-            {
-                return NotFound();
-            }
-            
-            result.Loves++;
-            return Ok();
+            var result = await _catService.AddLoveAsync(id);
+            return result ? (IActionResult) Ok() : NotFound();
         }
 
         /// <summary>
@@ -106,16 +100,10 @@ namespace CatApi.Controllers
         [HttpPut("api/hate/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Hate(string id)
+        public async Task<IActionResult> Hate(string id)
         {
-            var result = cats.FirstOrDefault(x => x.Id == id);
-            if (result == null)
-            {
-                return NotFound();
-            }
-            
-            result.Hates++; 
-            return Ok();
+            var result = await _catService.AddHateAsync(id);
+            return result ? (IActionResult) Ok() : NotFound();
         }
 
         /// <summary>
@@ -128,44 +116,10 @@ namespace CatApi.Controllers
         [HttpGet("api/image/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult Image(string id)
+        public async Task<IActionResult> Image(string id)
         {
-            var cat = cats.FirstOrDefault(x => x.Id == id);
-
-            if (cat == null)
-            {
-                return NotFound();
-            }
-
-            try
-            {
-                using (var client = new WebClient())
-                {
-                    var filepath = Path.Combine($"{_downloadDirectoryPath}\\{cat.Name}.{cat.Url.Substring(cat.Url.Length - 3)}");
-                    client.DownloadFileAsync(new Uri(cat.Url), filepath);
-                    return Ok();
-                }
-            }
-            catch (Exception)
-            {
-                return NotFound();
-            }
-        }
-
-        [Authorize]
-        [HttpPost("api/cat/")]
-        public IActionResult AddCat(string url, string sourceUrl, string name)
-        {
-            Cat cat = new Cat(url, sourceUrl, name);
-            cats.Add(cat);
-            
-            using (FileStream fs = new FileStream("cats.json", FileMode.OpenOrCreate))
-            using (StreamWriter sw = new StreamWriter(fs))
-            {
-                sw.Write(JsonSerializer.Serialize(cats));
-            }
-
-            return Ok(cat);
+            var result = await _catService.DownloadCatImageAsync(id);
+            return result ? (IActionResult) Ok() : NotFound();
         }
     }
 }
