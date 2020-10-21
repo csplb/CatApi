@@ -75,7 +75,7 @@ namespace CatApi
 
         public static void InjectServices(this IServiceCollection services)
         {
-            services.AddSingleton<ICatService, CatService>();
+            services.AddTransient<ICatService, CatService>();
         }
     }
 }

@@ -48,15 +48,7 @@ namespace CatApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IEnumerable<Cat>> Get([FromQuery] bool rand = false)
         {
-            if (!rand)
-                return _catService.GetCatsAsync()
-                    .Result
-                    .OrderByDescending(x => x.Loves)
-                    .ThenByDescending(x => x.Hates);
-
-            return _catService.GetCatsAsync()
-                .Result
-                .OrderBy(x => Guid.NewGuid());
+            return await _catService.GetCatsAsync(rand);
         }
         
         /// <summary>
